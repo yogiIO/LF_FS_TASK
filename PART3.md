@@ -15,11 +15,16 @@ Short notes for reviewers. I fixed what I could without turning the take-home in
 **Changed**
 - JWT in an **httpOnly** cookie (`SameSite=Lax`, `Secure` in production). Not returned in JSON. Bearer still accepted for curl/Postman.
 - `JWT_SECRET` from env; verify pinned to **HS256**.
-- Zod on login/register and on create post/comment (title 50, body 1000, comment 500).
+- Zod on login/register and on create post/comment (title 50, body 1000, comment 500). `image_url` must be a real **HTTP or HTTPS** URL (or empty), not an arbitrary string.
 - CORS allowlist + `credentials: true` for the Vite origin.
 - Login failures use the same 401 message (no email enumeration).
 - 500s log the real error on the server; the client only gets `Internal server error`.
 - Optional auth on the feed so `liked` can be set without making the feed private.
+
+**What I skipped on purpose**
+- To further protect API routes I could add rate-limiting and Helmet. For this take-home, auth middleware, Zod validators, httpOnly cookies, CORS allowlisting, and a safe error handler are sufficient.
+- Rate-limiting depends on how the app is deployed, not just on adding a middleware. An **in-memory** limiter is fine for a **single instance**. If I scale **horizontally** (more than one Node process), each process has its own counters, so that limiter is not shared. A **centralized** limiter (typically Redis) is the right fit then. I did not pick one here because that is an architecture and scaling decision, not a gap in the current API.
+- I did not add a test suite to the repo. I did not want to pile extra tooling and fixtures onto a round-1 diff. The app is structured so tests can land later (validators, controllers, pages) without rewriting what is already there. First tests I would add: login/cookie auth, like toggle, feed pagination.
 
 ## 12. Backend efficiency and dead code
 
@@ -62,9 +67,10 @@ Short notes for reviewers. I fixed what I could without turning the take-home in
 - Hardcoded DB, API URLs, and secrets.
 
 **Changed**
-- `.env` / `.env.example`: `DB_*`, `JWT_SECRET`, `PORT`, `FRONTEND_ORIGIN`, `VITE_API_BASE_URL`.
+- `.env` / `.env.example`: `DB_*`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `ACCESS_TOKEN_MAX_AGE_MS`, `BCRYPT_SALT_ROUNDS`, `PORT`, `CORS_ORIGIN` (comma-separated), `VITE_API_BASE_URL`.
 - Sequelize logging off when `NODE_ENV=production`.
-- Scripts: `npm run dev` (API + Vite), or `dev:api` / `dev:web` separately.
+- Scripts: `npm run dev` (API with `--watch` + Vite), `start` for the API without watch, `build` / `preview` for the frontend.
+- Best practice is to treat **`schema.sql` as the source of truth** (plus `insert_data.sql` for seed). `sequelize.sync({ alter: false })` is only a boot safety net: it creates missing tables from models and does not rewrite the schema. I would not use `alter: true` / `force: true` against a real database.
 
 Copy `.env.example` → `.env` per machine. Never commit `.env`.
 
@@ -76,7 +82,7 @@ Copy `.env.example` → `.env` per machine. Never commit `.env`.
 **Changed**
 
 ```
-src/config              database, JWT/cookie
+src/config              env, database, JWT/cookie
 src/models              schema + associations
 src/middleware          auth, validate, errors
 src/validators          Zod
@@ -93,6 +99,8 @@ main.jsx                Vite entry
 ```
 
 No extra service layer. Controllers stay thin enough for this app.
+
+I focused on delivering a clean, production-ready, scalable backend + frontend: open to add features (new routes, validators, pages) and closed to modifying what already works (boot file stays a boot file; existing handlers do not need a rewrite to extend the API).
 
 ## How to run
 

@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 const { User, Post, Comment } = require('../models');
+const env = require('../config/env');
 
 async function listUsers(req, res, next) {
     try {
@@ -63,7 +64,7 @@ async function createUser(req, res, next) {
             return res.status(400).json({ error: 'Username already taken' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, env.bcryptSaltRounds);
 
         const user = await User.create({
             username,

@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-require('dotenv').config();
 
+const env = require('./src/config/env');
 const { sequelize } = require('./src/models');
 const apiRoutes = require('./src/routes');
 const errorHandler = require('./src/middleware/errorHandler');
@@ -11,7 +11,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+    origin: env.corsOrigins,
     credentials: true
 }));
 
@@ -22,12 +22,10 @@ sequelize.authenticate()
 app.use('/api', apiRoutes);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
-
 sequelize.sync({ alter: false })
     .then(() => {
-        app.listen(PORT, () => {
-            console.log(`✓ Server running on http://localhost:${PORT}`);
+        app.listen(env.port, () => {
+            console.log(`✓ Server running on http://localhost:${env.port}`);
         });
     })
     .catch(err => {

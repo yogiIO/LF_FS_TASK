@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const { JWT_ALGORITHM, ACCESS_TOKEN_COOKIE, getJwtSecret } = require('../config/auth');
+const env = require('../config/env');
+const { JWT_ALGORITHM, ACCESS_TOKEN_COOKIE } = require('../config/auth');
 
 function readAccessToken(req) {
     const cookieToken = req.cookies && req.cookies[ACCESS_TOKEN_COOKIE];
@@ -16,7 +17,7 @@ function readAccessToken(req) {
 }
 
 function attachUserFromToken(token) {
-    const payload = jwt.verify(token, getJwtSecret(), {
+    const payload = jwt.verify(token, env.jwtSecret, {
         algorithms: [JWT_ALGORITHM]
     });
     if (!payload || payload.id == null) {
@@ -38,10 +39,7 @@ function authenticateToken(req, res, next) {
         }
         req.user = user;
         return next();
-    } catch (err) {
-        if (err.message === 'JWT_SECRET is not set') {
-            return next(err);
-        }
+    } catch {
         return res.status(401).json({ error: 'Invalid or expired token' });
     }
 }
@@ -57,10 +55,8 @@ function optionalAuthenticate(req, res, next) {
         if (user) {
             req.user = user;
         }
-    } catch (err) {
-        if (err.message === 'JWT_SECRET is not set') {
-            return next(err);
-        }
+    } catch {
+        // Invalid or expired token: treat as a guest.
     }
 
     return next();

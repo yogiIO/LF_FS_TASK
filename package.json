@@ -6,8 +6,10 @@
   "scripts": {
     "start": "node backend_express.js",
     "dev": "concurrently -n api,web -c blue,magenta \"npm run dev:api\" \"npm run dev:web\"",
-    "dev:api": "node backend_express.js",
+    "dev:api": "node --watch backend_express.js",
     "dev:web": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

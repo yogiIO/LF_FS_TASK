@@ -1,5 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './frontend_react.jsx'
+import App from './src/frontend/App.jsx'
+import ErrorBoundary from './src/frontend/components/ErrorBoundary.jsx'
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <ErrorBoundary>
+        <App />
+    </ErrorBoundary>
+)

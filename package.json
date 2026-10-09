@@ -5,6 +5,9 @@
   "main": "backend_express.js",
   "scripts": {
     "start": "node backend_express.js",
+    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "node backend_express.js",
+    "dev:web": "vite",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -17,18 +20,27 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.4.0",
+    "@mui/material": "^9.4.0",
     "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "express": "^4.22.1",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.16.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "sequelize": "^6.37.7"
+    "react-router-dom": "^7.18.4",
+    "sequelize": "^6.37.7",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.1",
+    "concurrently": "^10.0.6",
     "vite": "^8.3.1"
   }
 }
